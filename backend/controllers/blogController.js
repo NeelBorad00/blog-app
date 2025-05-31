@@ -3,6 +3,18 @@ const User = require('../models/User');
 const { validationResult } = require('express-validator');
 const { cloudinary } = require('../config/cloudinary');
 
+// Helper function to handle image deletion from Cloudinary
+const deleteImageFromCloudinary = async (imageUrl) => {
+  try {
+    if (imageUrl && cloudinary.config().cloud_name !== 'demo') {
+      const publicId = imageUrl.split('/').pop().split('.')[0];
+      await cloudinary.uploader.destroy(publicId);
+    }
+  } catch (error) {
+    console.error('Error deleting image from Cloudinary:', error);
+  }
+};
+
 // Create a new blog
 exports.createBlog = async (req, res) => {
   try {
@@ -96,10 +108,7 @@ exports.updateBlog = async (req, res) => {
     // If new image is uploaded
     if (req.file) {
       // Delete old image from Cloudinary if it exists
-      if (blog.image) {
-        const publicId = blog.image.split('/').pop().split('.')[0];
-        await cloudinary.uploader.destroy(publicId);
-      }
+      await deleteImageFromCloudinary(blog.image);
       image = req.file.path;
     }
 
@@ -133,10 +142,7 @@ exports.deleteBlog = async (req, res) => {
     }
 
     // Delete image from Cloudinary if it exists
-    if (blog.image) {
-      const publicId = blog.image.split('/').pop().split('.')[0];
-      await cloudinary.uploader.destroy(publicId);
-    }
+    await deleteImageFromCloudinary(blog.image);
 
     await blog.deleteOne();
     res.json({ message: 'Blog deleted successfully' });

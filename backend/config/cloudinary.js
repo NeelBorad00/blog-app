@@ -2,12 +2,26 @@ const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
-});
+// Check if environment variables are set
+if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+  console.error('Cloudinary environment variables are not set!');
+  // Use a fallback configuration for development
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('Using development fallback for Cloudinary');
+    cloudinary.config({
+      cloud_name: 'demo',
+      api_key: 'demo',
+      api_secret: 'demo'
+    });
+  }
+} else {
+  // Configure Cloudinary with environment variables
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+  });
+}
 
 // Configure storage
 const storage = new CloudinaryStorage({

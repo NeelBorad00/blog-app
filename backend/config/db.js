@@ -7,8 +7,23 @@ const connectDB = async () => {
       useUnifiedTopology: true,
     });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
+    
+    // Add connection event handlers
+    mongoose.connection.on('error', (err) => {
+      console.error('MongoDB connection error:', err);
+    });
+
+    mongoose.connection.on('disconnected', () => {
+      console.log('MongoDB disconnected');
+    });
+
+    mongoose.connection.on('reconnected', () => {
+      console.log('MongoDB reconnected');
+    });
+
   } catch (error) {
-    console.error(`Error: ${error.message}`);
+    console.error(`MongoDB Connection Error: ${error.message}`);
+    console.error('Connection URI:', process.env.MONGODB_URI.replace(/:[^:@]*@/, ':****@')); // Hide password in logs
     process.exit(1);
   }
 };

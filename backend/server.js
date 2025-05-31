@@ -28,6 +28,17 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// Add headers middleware
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', process.env.NODE_ENV === 'production' 
+    ? 'https://blog-app-frontend.onrender.com'
+    : 'http://localhost:3000');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  next();
+});
+
 // Create uploads directory if it doesn't exist
 const uploadDir = path.join(__dirname, 'uploads');
 if (!require('fs').existsSync(uploadDir)) {

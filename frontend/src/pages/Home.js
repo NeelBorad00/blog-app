@@ -30,7 +30,7 @@ import {
   Bookmark as BookmarkIcon,
 } from '@mui/icons-material';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL || 'https://blog-app-backend-0ink.onrender.com/api';
 
 const BlogCardSkeleton = () => (
   <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -66,13 +66,19 @@ const Home = () => {
   const fetchBlogs = useCallback(async () => {
     try {
       setLoading(true);
+      console.log('Fetching blogs from:', `${API_URL}/blogs?page=${page}`);
       const response = await axios.get(`${API_URL}/blogs?page=${page}`);
+      console.log('Blogs response:', response.data);
       setBlogs(response.data.blogs);
       setTotalPages(response.data.totalPages);
       setError(null);
     } catch (err) {
-      setError('Failed to fetch blogs');
-      console.error(err);
+      console.error('Error fetching blogs:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status
+      });
+      setError(err.response?.data?.message || 'Failed to fetch blogs. Please try again later.');
     } finally {
       setLoading(false);
     }

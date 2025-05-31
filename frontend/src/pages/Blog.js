@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -34,6 +34,8 @@ import {
   CloudUpload as CloudUploadIcon,
 } from '@mui/icons-material';
 import ReadProgress from '../components/ReadProgress';
+import { toast } from 'react-toastify';
+import { logout } from '../features/auth/authSlice';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -50,6 +52,7 @@ const Blog = () => {
   const [editedTitle, setEditedTitle] = useState('');
   const [editedImage, setEditedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     fetchBlog();
@@ -110,13 +113,17 @@ const Blog = () => {
   };
 
   const handleDelete = async () => {
-    try {
-      await axios.delete(`${API_URL}/blogs/${id}`, {
-        headers: { Authorization: `Bearer ${user.token}` },
-      });
-      navigate('/');
-    } catch (err) {
-      setError('Failed to delete blog');
+    if (window.confirm('Are you sure you want to delete this blog?')) {
+      try {
+        await axios.delete(`${API_URL}/blogs/${id}`, {
+          headers: { Authorization: `Bearer ${user.token}` },
+        });
+        navigate('/');
+        toast.success('Blog deleted successfully');
+      } catch (err) {
+        console.error('Error deleting blog:', err);
+        toast.error('Failed to delete blog');
+      }
     }
   };
 

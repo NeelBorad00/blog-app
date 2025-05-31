@@ -17,7 +17,7 @@ const app = express();
 // CORS configuration
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://blog-app-frontend.onrender.com', 'http://localhost:3000']
+    ? ['https://blog-app-frontend-nz6t.onrender.com', 'http://localhost:3000']
     : '*',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -31,7 +31,7 @@ app.use(express.json());
 // Add headers middleware for additional security
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', process.env.NODE_ENV === 'production' 
-    ? 'https://blog-app-frontend.onrender.com'
+    ? 'https://blog-app-frontend-nz6t.onrender.com'
     : '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');

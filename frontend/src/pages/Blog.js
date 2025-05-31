@@ -221,7 +221,7 @@ const Blog = () => {
                 }}
                 onError={(e) => {
                   if (!blog.image.startsWith('http')) {
-                    e.target.src = `${process.env.REACT_APP_API_URL}/${blog.image}`;
+                    e.target.src = `${process.env.REACT_APP_API_URL}${blog.image}`;
                   }
                 }}
               />

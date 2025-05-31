@@ -27,7 +27,7 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const SavedBlogs = () => {
   const navigate = useNavigate();
-  const { token } = useSelector((state) => state.auth);
+  const { token, user } = useSelector((state) => state.auth);
   const [savedBlogs, setSavedBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -59,7 +59,11 @@ const SavedBlogs = () => {
         }
       );
       setSavedBlogs((prev) =>
-        prev.map((blog) => (blog._id === blogId ? { ...blog, likes: [...blog.likes, user._id] } : blog))
+        prev.map((blog) => 
+          blog._id === blogId 
+            ? { ...blog, likes: blog.likes.includes(user._id) ? blog.likes : [...blog.likes, user._id] }
+            : blog
+        )
       );
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to like blog');
@@ -68,7 +72,7 @@ const SavedBlogs = () => {
 
   const handleSave = async (blogId) => {
     try {
-      const response = await axios.post(
+      await axios.post(
         `${API_URL}/blogs/${blogId}/save`,
         {},
         {
@@ -187,7 +191,7 @@ const SavedBlogs = () => {
                   <CardActions>
                     <IconButton
                       onClick={() => handleLike(blog._id)}
-                      color={blog.likes.includes(blog.author._id) ? 'primary' : 'default'}
+                      color={blog.likes.includes(user?._id) ? 'primary' : 'default'}
                       sx={{
                         transition: 'transform 0.2s',
                         '&:active': {

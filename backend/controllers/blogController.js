@@ -1,6 +1,7 @@
 const Blog = require('../models/Blog');
 const User = require('../models/User');
 const { validationResult } = require('express-validator');
+const { cloudinary } = require('../config/cloudinary');
 
 // Create a new blog
 exports.createBlog = async (req, res) => {
@@ -11,7 +12,7 @@ exports.createBlog = async (req, res) => {
     }
 
     const { title, content, linkedBlogs } = req.body;
-    const image = req.file ? `/uploads/${req.file.filename}` : null;
+    const image = req.file ? req.file.path : null;
 
     const blog = new Blog({
       title,
@@ -90,7 +91,17 @@ exports.updateBlog = async (req, res) => {
     }
 
     const { title, content, linkedBlogs } = req.body;
-    const image = req.file ? `/uploads/${req.file.filename}` : blog.image;
+    let image = blog.image;
+
+    // If new image is uploaded
+    if (req.file) {
+      // Delete old image from Cloudinary if it exists
+      if (blog.image) {
+        const publicId = blog.image.split('/').pop().split('.')[0];
+        await cloudinary.uploader.destroy(publicId);
+      }
+      image = req.file.path;
+    }
 
     blog.title = title || blog.title;
     blog.content = content || blog.content;
@@ -111,30 +122,23 @@ exports.updateBlog = async (req, res) => {
 // Delete a blog
 exports.deleteBlog = async (req, res) => {
   try {
-    console.log('Delete blog request:', {
-      blogId: req.params.id,
-      userId: req.user.id
-    });
-
     const blog = await Blog.findById(req.params.id);
     
     if (!blog) {
-      console.log('Blog not found:', req.params.id);
       return res.status(404).json({ message: 'Blog not found' });
     }
 
-    // Check if user is the author
     if (blog.author.toString() !== req.user.id) {
-      console.log('Unauthorized delete attempt:', {
-        blogAuthor: blog.author.toString(),
-        userId: req.user.id
-      });
-      return res.status(401).json({ message: 'Not authorized to delete this blog' });
+      return res.status(401).json({ message: 'Not authorized' });
+    }
+
+    // Delete image from Cloudinary if it exists
+    if (blog.image) {
+      const publicId = blog.image.split('/').pop().split('.')[0];
+      await cloudinary.uploader.destroy(publicId);
     }
 
     await blog.deleteOne();
-    console.log('Blog deleted successfully:', req.params.id);
-    
     res.json({ message: 'Blog deleted successfully' });
   } catch (err) {
     console.error('Delete blog error:', err);

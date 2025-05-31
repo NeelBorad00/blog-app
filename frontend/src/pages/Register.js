@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import axios from 'axios';
 import {
   Container,
-  Paper,
   Typography,
   TextField,
   Button,
   Box,
   Alert,
+  CircularProgress,
+  Fade,
 } from '@mui/material';
 import { register } from '../redux/actions/authActions';
 

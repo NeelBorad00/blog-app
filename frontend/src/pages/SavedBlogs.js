@@ -51,7 +51,7 @@ const SavedBlogs = () => {
 
   const handleLike = async (blogId) => {
     try {
-      const response = await axios.post(
+      await axios.post(
         `${API_URL}/blogs/${blogId}/like`,
         {},
         {
@@ -59,7 +59,7 @@ const SavedBlogs = () => {
         }
       );
       setSavedBlogs((prev) =>
-        prev.map((blog) => (blog._id === blogId ? response.data : blog))
+        prev.map((blog) => (blog._id === blogId ? { ...blog, likes: [...blog.likes, user._id] } : blog))
       );
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to like blog');

@@ -20,6 +20,7 @@ import {
   Alert,
   Tooltip,
   Fade,
+  TextField,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -30,6 +31,7 @@ import {
   Bookmark as BookmarkIcon,
   BookmarkBorder as BookmarkBorderIcon,
   AccessTime as AccessTimeIcon,
+  CloudUpload as CloudUploadIcon,
 } from '@mui/icons-material';
 import ReadProgress from '../components/ReadProgress';
 
@@ -45,6 +47,9 @@ const Blog = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState('');
+  const [editedTitle, setEditedTitle] = useState('');
+  const [editedImage, setEditedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
 
   useEffect(() => {
     fetchBlog();
@@ -55,6 +60,8 @@ const Blog = () => {
       const response = await axios.get(`${API_URL}/blogs/${id}`);
       setBlog(response.data);
       setEditedContent(response.data.content);
+      setEditedTitle(response.data.title);
+      setImagePreview(response.data.image);
     } catch (err) {
       setError('Failed to fetch blog');
     } finally {
@@ -113,17 +120,37 @@ const Blog = () => {
     }
   };
 
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setEditedImage(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
   const handleUpdate = async () => {
     try {
+      const formData = new FormData();
+      formData.append('title', editedTitle);
+      formData.append('content', editedContent);
+      if (editedImage) {
+        formData.append('image', editedImage);
+      }
+
       const response = await axios.put(
         `${API_URL}/blogs/${id}`,
-        { content: editedContent },
+        formData,
         {
-          headers: { Authorization: `Bearer ${user.token}` },
+          headers: { 
+            Authorization: `Bearer ${user.token}`,
+            'Content-Type': 'multipart/form-data',
+          },
         }
       );
       setBlog(response.data);
       setIsEditing(false);
+      setEditedImage(null);
+      setImagePreview(response.data.image);
     } catch (err) {
       setError('Failed to update blog');
     }
@@ -176,78 +203,127 @@ const Blog = () => {
               borderColor: 'divider',
             }}
           >
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h4" component="h1">
-                {blog.title}
-              </Typography>
-              {isAuthor && (
-                <Box>
-                  <Tooltip title="Edit">
-                    <IconButton onClick={() => setIsEditing(!isEditing)}>
-                      <EditIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Delete">
-                    <IconButton onClick={() => setDeleteDialogOpen(true)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-              )}
-            </Box>
-
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-              <Typography variant="subtitle1" color="text.secondary">
-                By {blog.author.name}
-              </Typography>
-              <Chip
-                icon={<AccessTimeIcon />}
-                label={`${blog.readTime} min read`}
-                size="small"
-              />
-            </Box>
-
-            {blog.image && (
-              <Box
-                component="img"
-                src={blog.image}
-                alt={blog.title}
-                sx={{
-                  width: '100%',
-                  height: 400,
-                  objectFit: 'cover',
-                  borderRadius: 2,
-                  mb: 3,
-                }}
-              />
-            )}
-
             {isEditing ? (
               <Box sx={{ mb: 3 }}>
+                <TextField
+                  fullWidth
+                  label="Title"
+                  value={editedTitle}
+                  onChange={(e) => setEditedTitle(e.target.value)}
+                  sx={{ mb: 2 }}
+                />
+                <Box sx={{ mb: 2 }}>
+                  <input
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    id="image-upload"
+                    type="file"
+                    onChange={handleImageChange}
+                  />
+                  <label htmlFor="image-upload">
+                    <Button
+                      variant="outlined"
+                      component="span"
+                      startIcon={<CloudUploadIcon />}
+                    >
+                      Upload New Image
+                    </Button>
+                  </label>
+                  {imagePreview && (
+                    <Box
+                      component="img"
+                      src={imagePreview}
+                      alt="Preview"
+                      sx={{
+                        width: '100%',
+                        height: 200,
+                        objectFit: 'cover',
+                        borderRadius: 2,
+                        mt: 2,
+                      }}
+                    />
+                  )}
+                </Box>
                 <ReactQuill
                   value={editedContent}
                   onChange={setEditedContent}
                   style={{ height: 400 }}
                 />
                 <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 2 }}>
-                  <Button onClick={() => setIsEditing(false)}>Cancel</Button>
+                  <Button onClick={() => {
+                    setIsEditing(false);
+                    setEditedTitle(blog.title);
+                    setEditedContent(blog.content);
+                    setImagePreview(blog.image);
+                    setEditedImage(null);
+                  }}>
+                    Cancel
+                  </Button>
                   <Button variant="contained" onClick={handleUpdate}>
                     Save Changes
                   </Button>
                 </Box>
               </Box>
             ) : (
-              <Box
-                sx={{
-                  '& .ql-editor': {
-                    padding: 0,
-                    fontSize: '1.1rem',
-                    lineHeight: 1.8,
-                  },
-                }}
-              >
-                <div dangerouslySetInnerHTML={{ __html: blog.content }} />
-              </Box>
+              <>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                  <Typography variant="h4" component="h1">
+                    {blog.title}
+                  </Typography>
+                  {isAuthor && (
+                    <Box>
+                      <Tooltip title="Edit">
+                        <IconButton onClick={() => setIsEditing(true)}>
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete">
+                        <IconButton onClick={() => setDeleteDialogOpen(true)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  )}
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                  <Typography variant="subtitle1" color="text.secondary">
+                    By {blog.author.name}
+                  </Typography>
+                  <Chip
+                    icon={<AccessTimeIcon />}
+                    label={`${blog.readTime} min read`}
+                    size="small"
+                  />
+                </Box>
+
+                {blog.image && (
+                  <Box
+                    component="img"
+                    src={blog.image}
+                    alt={blog.title}
+                    sx={{
+                      width: '100%',
+                      height: 400,
+                      objectFit: 'cover',
+                      borderRadius: 2,
+                      mb: 3,
+                    }}
+                  />
+                )}
+
+                <Box
+                  sx={{
+                    '& .ql-editor': {
+                      padding: 0,
+                      fontSize: '1.1rem',
+                      lineHeight: 1.8,
+                    },
+                  }}
+                >
+                  <div dangerouslySetInnerHTML={{ __html: blog.content }} />
+                </Box>
+              </>
             )}
 
             <Box sx={{ display: 'flex', gap: 2, mt: 4 }}>

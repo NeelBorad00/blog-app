@@ -24,7 +24,17 @@ exports.createBlog = async (req, res) => {
     }
 
     const { title, content, linkedBlogs } = req.body;
-    const image = req.file ? req.file.path : null;
+    let image = null;
+
+    // Handle image upload if present
+    if (req.file) {
+      try {
+        image = req.file.path;
+      } catch (uploadError) {
+        console.error('Image upload error:', uploadError);
+        // Continue without image if upload fails
+      }
+    }
 
     const blog = new Blog({
       title,

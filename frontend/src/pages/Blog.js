@@ -39,6 +39,28 @@ import { logout } from '../features/auth/authSlice';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
+const modules = {
+  toolbar: [
+    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+    [{ 'color': [] }, { 'background': [] }],
+    ['link', 'image'],
+    ['clean']
+  ],
+  clipboard: {
+    matchVisual: false
+  }
+};
+
+const formats = [
+  'header',
+  'bold', 'italic', 'underline', 'strike',
+  'list', 'bullet',
+  'color', 'background',
+  'link', 'image'
+];
+
 const Blog = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -264,6 +286,8 @@ const Blog = () => {
                 <ReactQuill
                   value={editedContent}
                   onChange={setEditedContent}
+                  modules={modules}
+                  formats={formats}
                   style={{ height: 400 }}
                 />
                 <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 2 }}>

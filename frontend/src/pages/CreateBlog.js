@@ -65,7 +65,12 @@ const CreateBlog = () => {
       formDataToSend.append('title', formData.title);
       formDataToSend.append('content', formData.content);
       if (formData.image) {
-        formDataToSend.append('image', formData.image);
+        try {
+          formDataToSend.append('image', formData.image);
+        } catch (uploadError) {
+          console.error('Image upload error:', uploadError);
+          // Continue without image if upload fails
+        }
       }
 
       const response = await axios.post(
@@ -81,7 +86,8 @@ const CreateBlog = () => {
 
       navigate(`/blog/${response.data._id}`);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create blog');
+      console.error('Create blog error:', err);
+      setError(err.response?.data?.message || 'Failed to create blog. Please try again.');
     } finally {
       setLoading(false);
     }

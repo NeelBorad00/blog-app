@@ -183,9 +183,9 @@ const Blog = () => {
     return null;
   }
 
-  const isAuthor = isAuthenticated && blog.author._id === user.id;
-  const isLiked = isAuthenticated && blog.likes.includes(user.id);
-  const isSaved = isAuthenticated && blog.saves.includes(user.id);
+  const isAuthor = isAuthenticated && user && blog.author._id === user._id;
+  const isLiked = isAuthenticated && user && blog.likes.includes(user._id);
+  const isSaved = isAuthenticated && user && blog.saves.includes(user._id);
 
   return (
     <Fade in={true}>

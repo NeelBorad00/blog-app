@@ -60,12 +60,18 @@ const Blog = () => {
 
   const fetchBlog = async () => {
     try {
-      const response = await axios.get(`${API_URL}/blogs/${id}`);
+      const response = await axios.get(`${API_URL}/blogs/${id}`, {
+        headers: isAuthenticated ? { Authorization: `Bearer ${user.token}` } : {}
+      });
       setBlog(response.data);
       setEditedContent(response.data.content);
       setEditedTitle(response.data.title);
       setImagePreview(response.data.image);
     } catch (err) {
+      if (err.response?.status === 401) {
+        dispatch(logout());
+        navigate('/login');
+      }
       setError('Failed to fetch blog');
     } finally {
       setLoading(false);
@@ -108,6 +114,10 @@ const Blog = () => {
       );
       setBlog(response.data);
     } catch (err) {
+      if (err.response?.status === 401) {
+        dispatch(logout());
+        navigate('/login');
+      }
       setError('Failed to save blog');
     }
   };

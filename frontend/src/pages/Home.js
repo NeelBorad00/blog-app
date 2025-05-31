@@ -323,4 +323,26 @@ const Home = () => {
                     <Button
                       variant="contained"
                       size="small"
-                      onClick={() => navigate(`
+                      onClick={() => navigate(`/blog/${blog._id}`)}
+                      sx={{
+                        transition: 'all 0.2s',
+                        '&:hover': {
+                          transform: 'translateY(-2px)',
+                          boxShadow: 2,
+                        },
+                      }}
+                    >
+                      Read
+                    </Button>
+                  </Box>
+                </Box>
+              </Card>
+            </Fade>
+          </Grid>
+        ))}
+      </Grid>
+    </Container>
+  );
+};
+
+export default Home;

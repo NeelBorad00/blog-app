@@ -219,6 +219,11 @@ const Blog = () => {
                   borderRadius: 2,
                   mb: 3,
                 }}
+                onError={(e) => {
+                  if (!blog.image.startsWith('http')) {
+                    e.target.src = `${process.env.REACT_APP_API_URL}/${blog.image}`;
+                  }
+                }}
               />
             )}
 

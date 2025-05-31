@@ -215,6 +215,12 @@ const Home = () => {
                     height="200"
                     image={blog.image}
                     alt={blog.title}
+                    onError={(e) => {
+                      // If image fails to load, try to load from Cloudinary
+                      if (!blog.image.startsWith('http')) {
+                        e.target.src = `${process.env.REACT_APP_API_URL}/${blog.image}`;
+                      }
+                    }}
                   />
                 )}
                 <CardContent sx={{ flexGrow: 1 }}>
@@ -317,76 +323,4 @@ const Home = () => {
                     <Button
                       variant="contained"
                       size="small"
-                      onClick={() => navigate(`/blog/${blog._id}`)}
-                      sx={{
-                        transition: 'all 0.2s',
-                        '&:hover': {
-                          transform: 'translateY(-2px)',
-                          boxShadow: 2,
-                        },
-                      }}
-                    >
-                      Read
-                    </Button>
-                    {isAuthenticated && user && blog.author._id === user.id && (
-                      <Tooltip title="Delete Blog">
-                        <IconButton
-                          color="error"
-                          onClick={() => handleDeleteClick(blog)}
-                          size="small"
-                          sx={{
-                            transition: 'all 0.2s',
-                            '&:hover': {
-                              transform: 'scale(1.1)',
-                              backgroundColor: 'rgba(255, 107, 107, 0.08)',
-                            },
-                            '&:active': {
-                              transform: 'scale(0.95)',
-                            },
-                          }}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </Tooltip>
-                    )}
-                  </Box>
-                </Box>
-              </Card>
-            </Fade>
-          </Grid>
-        ))}
-      </Grid>
-
-      {totalPages > 1 && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-          <Pagination
-            count={totalPages}
-            page={page}
-            onChange={handlePageChange}
-            color="primary"
-          />
-        </Box>
-      )}
-
-      <Dialog
-        open={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
-      >
-        <DialogTitle>Delete Blog</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Are you sure you want to delete "{blogToDelete?.title}"? This action cannot be undone.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleDeleteConfirm} color="error" variant="contained">
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Container>
-  );
-};
-
-export default Home; 
+                      onClick={() => navigate(`
